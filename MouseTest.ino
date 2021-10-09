@@ -10,6 +10,7 @@ int previousSW;
 
 int actualSW;
 
+bool XorY = false;
 int multiplier = 10;
 
 void setup()
@@ -33,12 +34,14 @@ void loop()
 {
 actualSW = digitalRead(encoderSW); // Without debouncing
 
-if (actualSW != previousSW)
-{
-Serial.print("SW= ");
-Serial.println(actualSW);
-previousSW = actualSW;
-}
+ if (actualSW == LOW && previousSW == HIGH) //check for click
+  {
+    XorY = !XorY;
+    Serial.print("SW= ");
+    Serial.println(actualSW==LOW);
+  }
+
+previousSW = digitalRead(encoderSW);
 
 if(encoderPos > previousEncoderPos)
 {
@@ -90,14 +93,14 @@ previousCLK = actualCLK;
 }
 
 void moveup(){
-  if(actualSW==0)
+  if(XorY)
   Mouse.move(0, 1 * multiplier, 0);
   else
   Mouse.move(1 * multiplier, 0, 0);
   }
 
 void movedown(){
-  if(actualSW==0)
+  if(XorY)
   Mouse.move(0, -1 * multiplier, 0);
   else
   Mouse.move(-1 * multiplier, 0, 0);

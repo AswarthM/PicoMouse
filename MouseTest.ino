@@ -12,6 +12,7 @@ int actualSW;
 
 bool XorY = false;
 int multiplier = 10;
+int dir = 0;
 
 void setup()
 {
@@ -42,30 +43,42 @@ actualSW = digitalRead(encoderSW); // Without debouncing
   }
 
 previousSW = digitalRead(encoderSW);
-
-if(encoderPos > previousEncoderPos)
-{
-moveup();
-Serial.print(actualSW);
-Serial.print(" ");
-Serial.print(encoderPos);
-Serial.println(" CW");
+rotaryDir();
+if(dir != 0){
+  Serial.println(dir);
+}
 }
 
-if(encoderPos < previousEncoderPos)
-{
-movedown();
-Serial.print(actualSW);
-Serial.print(" ");
-Serial.print(encoderPos);
-Serial.println(" CCW");
-}
 
-previousEncoderPos = encoderPos;
+//Rotary Encoder Logic
+void rotaryDir(){
+   dir = encoderPos - previousEncoderPos;
+   previousEncoderPos = encoderPos;
+   return;
+  if(encoderPos > previousEncoderPos)
+  {
+  moveup();
+  Serial.print(actualSW);
+  Serial.print(" ");
+  Serial.print(encoderPos);
+  Serial.println(" CW");
+  }
+  
+  if(encoderPos < previousEncoderPos)
+  {
+  movedown();
+  Serial.print(actualSW);
+  Serial.print(" ");
+  Serial.print(encoderPos);
+  Serial.println(" CCW");
+  }
+  
+  previousEncoderPos = encoderPos;
+  
+  // delay(1000);
+  delay(40);
 
-// delay(1000);
-delay(40);
-}
+  }
 
 void doEncoder()
 {

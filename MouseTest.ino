@@ -8,17 +8,22 @@ int previousDT;
 int previousCLK;
 int previousSW;
 
+
 int actualSW;
 
-bool XorY = false;
+bool clicked = false;
 int multiplier = 10;
 int dir = 0;
+int encoderPos = 0;
+int previousEncoderPos = 0;
 
 void setup()
 {
 Serial.begin(9600);
 Mouse.begin();
 delay(5000);
+
+////////rotaryEncoder//////////
 pinMode(encoderDT, INPUT_PULLUP);
 pinMode(encoderCLK, INPUT_PULLUP);
 pinMode(encoderSW, INPUT_PULLUP);
@@ -26,61 +31,62 @@ attachInterrupt(digitalPinToInterrupt(encoderCLK), doEncoder, CHANGE);
 previousDT = digitalRead(encoderDT);
 previousCLK = digitalRead(encoderCLK);
 previousSW = digitalRead(encoderSW);
+////////rotaryEncoder//////////
+
 }
 
-int encoderPos = 0;
-int previousEncoderPos = 0;
 
 void loop()
 {
+  
 actualSW = digitalRead(encoderSW); // Without debouncing
-
- if (actualSW == LOW && previousSW == HIGH) //check for click
-  {
-    XorY = !XorY;
-    Serial.print("SW= ");
-    Serial.println(actualSW==LOW);
-  }
-
+if (actualSW == LOW && previousSW == HIGH) //check for click
+ {
+   clicked = !clicked;
+   Serial.print("SW= ");
+   Serial.println(actualSW==LOW);
+ }
 previousSW = digitalRead(encoderSW);
-rotaryDir();
-if(dir != 0){
-  Serial.println(dir);
-}
+
+
+dir = rotaryDir();
+if(dir != 0)
+  {
+    moveMouse();
+    Serial.println(dir);
+  }
 }
 
 
 //Rotary Encoder Logic
-void rotaryDir(){
-   dir = encoderPos - previousEncoderPos;
-   previousEncoderPos = encoderPos;
-   return;
-  if(encoderPos > previousEncoderPos)
-  {
-  moveup();
-  Serial.print(actualSW);
-  Serial.print(" ");
-  Serial.print(encoderPos);
-  Serial.println(" CW");
-  }
-  
-  if(encoderPos < previousEncoderPos)
-  {
-  movedown();
-  Serial.print(actualSW);
-  Serial.print(" ");
-  Serial.print(encoderPos);
-  Serial.println(" CCW");
-  }
-  
+int rotaryDir()
+{
+  dir = encoderPos - previousEncoderPos;
   previousEncoderPos = encoderPos;
+//  if(dir == 1)
+//  {
+//  moveup();
+//  Serial.print(actualSW);
+//  Serial.print(" ");
+//  Serial.print(encoderPos);
+//  Serial.println(" CW");
+//  }
+//  
+//  if(dir == -1)
+//  {
+//  movedown();
+//  Serial.print(actualSW);
+//  Serial.print(" ");
+//  Serial.print(encoderPos);
+//  Serial.println(" CCW");
+//  }
   
-  // delay(1000);
+  
   delay(40);
+  return dir;
+}
 
-  }
-
-void doEncoder()
+void doEncoder() //rotary encoder interupt
 {
 int actualCLK = digitalRead(encoderCLK);
 int actualEncoderDT = digitalRead(encoderDT);
@@ -101,20 +107,33 @@ else{
 encoderPos--;}
 }
 
-
 previousCLK = actualCLK;
 }
 
-void moveup(){
-  if(XorY)
+void moveup()
+{
+  if(clicked)
   Mouse.move(0, 1 * multiplier, 0);
   else
   Mouse.move(1 * multiplier, 0, 0);
-  }
+}
 
-void movedown(){
-  if(XorY)
+void movedown()
+{
+  if(clicked)
   Mouse.move(0, -1 * multiplier, 0);
   else
   Mouse.move(-1 * multiplier, 0, 0);
+}
+
+void moveMouse()
+{
+  if(clicked)
+  {
+    Mouse.move(0, dir * multiplier, 0);
   }
+  if(!clicked)
+  {
+    Mouse.move(dir * multiplier, 0, 0);
+  }
+}
